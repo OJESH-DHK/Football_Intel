@@ -1,0 +1,44 @@
+# Core
+django==4.2.20
+djangorestframework==3.15.2
+django-environ==0.11.2
+django-extensions==3.2.3
+
+# Async tasks
+celery[redis]==5.3.6
+django-celery-beat==2.6.0
+django-celery-results==2.5.1
+
+# Database
+psycopg2-binary==2.9.9
+pgvector==0.3.2
+
+# Redis
+redis==5.0.3
+
+# AI
+anthropic==0.28.0
+sentence-transformers==2.7.0
+
+# Telegram
+python-telegram-bot==20.8
+
+# Scraping / HTTP
+httpx==0.26.0
+feedparser==6.0.11
+beautifulsoup4==4.12.3
+lxml==5.2.1
+python-Levenshtein==0.25.1
+
+# API docs
+drf-spectacular==0.27.2
+
+# Production
+gunicorn==22.0.0
+whitenoise==6.7.0
+
+# Utils
+pydantic==2.7.1
+tenacity==8.3.0
+structlog==24.2.0
+sentry-sdk==2.3.1

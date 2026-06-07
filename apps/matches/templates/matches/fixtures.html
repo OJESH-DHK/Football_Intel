@@ -1,0 +1,41 @@
+{% extends "matches/base.html" %}
+
+{% block title %}Fixtures · Football Intel{% endblock %}
+{% block heading %}Today's Fixtures{% endblock %}
+{% block subheading %}{{ today|date:"l, j M Y" }}{% endblock %}
+
+{% block content %}
+{% if grouped %}
+<div class="space-y-6">
+    {% for group in grouped %}
+    <section class="rounded-2xl bg-navy-700/60 glow overflow-hidden">
+        <div class="flex items-center gap-2.5 px-5 py-3.5 bg-white/5 border-b border-white/5">
+            {% if group.competition.flag_url %}<img src="{{ group.competition.flag_url }}" class="h-4 w-6 object-cover rounded-sm" alt="">{% endif %}
+            <span class="font-semibold text-white">{{ group.competition.name }}</span>
+            <span class="text-xs text-slate-400">{{ group.competition.country }}</span>
+        </div>
+        <div class="divide-y divide-white/5">
+            {% for match in group.matches %}
+            <a href="{% url 'dashboard:match_detail' match.pk %}"
+               class="grid grid-cols-[auto_1fr] sm:grid-cols-[5rem_1fr_auto] items-center gap-3 px-5 py-3 hover:bg-white/5 transition-colors">
+                <div class="text-sm font-semibold text-accent tabular-nums">{{ match.kickoff|time:"H:i" }}</div>
+                <div class="flex items-center justify-center gap-3 text-sm">
+                    <span class="flex-1 text-right font-medium text-white truncate">{{ match.home_team.name }}</span>
+                    <span class="text-slate-500 text-xs">vs</span>
+                    <span class="flex-1 font-medium text-white truncate">{{ match.away_team.name }}</span>
+                </div>
+                <div class="hidden sm:block text-xs text-slate-400 text-right">{{ match.get_status_display }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+</div>
+{% else %}
+<div class="rounded-2xl bg-navy-700/40 glow p-12 text-center">
+    <div class="text-5xl mb-3">📭</div>
+    <div class="text-lg font-semibold text-white">No fixtures scheduled today</div>
+    <p class="text-slate-400 mt-1 text-sm">Nothing on the calendar for {{ today|date:"j M Y" }}.</p>
+</div>
+{% endif %}
+{% endblock %}

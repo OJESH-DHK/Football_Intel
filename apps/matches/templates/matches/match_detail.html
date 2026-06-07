@@ -1,0 +1,71 @@
+{% extends "matches/base.html" %}
+
+{% block title %}{{ match.home_team.name }} vs {{ match.away_team.name }} · Football Intel{% endblock %}
+{% block heading %}Match Detail{% endblock %}
+{% block subheading %}{{ match.competition.name }} · {{ match.kickoff|date:"j M Y, H:i" }}{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'dashboard:live' %}" class="text-sm text-accent hover:underline">← Back</a>
+{% endblock %}
+
+{% block content %}
+<!-- Scoreboard -->
+<section class="rounded-2xl bg-navy-700/60 glow p-6">
+    <div class="flex items-center justify-center mb-4">
+        {% if match.is_live %}
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/15 text-accent text-xs font-semibold px-2.5 py-1">
+            <span class="h-1.5 w-1.5 rounded-full bg-accent live-dot"></span>
+            {% if match.minute %}{{ match.minute }}'{% else %}LIVE{% endif %}
+        </span>
+        {% else %}
+        <span class="rounded-full bg-white/5 text-slate-300 text-xs font-semibold px-2.5 py-1">{{ match.get_status_display }}</span>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div class="flex flex-col items-center gap-2 min-w-0">
+            {% if match.home_team.logo_url %}<img src="{{ match.home_team.logo_url }}" class="h-14 w-14 object-contain" alt="">{% endif %}
+            <span class="font-bold text-white text-center truncate w-full">{{ match.home_team.name }}</span>
+        </div>
+        <div class="text-4xl md:text-5xl font-extrabold text-white tabular-nums px-2">
+            {{ match.home_score|default:0 }} <span class="text-slate-500">:</span> {{ match.away_score|default:0 }}
+        </div>
+        <div class="flex flex-col items-center gap-2 min-w-0">
+            {% if match.away_team.logo_url %}<img src="{{ match.away_team.logo_url }}" class="h-14 w-14 object-contain" alt="">{% endif %}
+            <span class="font-bold text-white text-center truncate w-full">{{ match.away_team.name }}</span>
+        </div>
+    </div>
+    {% if match.home_score_ht is not None %}
+    <div class="text-center text-xs text-slate-400 mt-3">HT {{ match.home_score_ht }} - {{ match.away_score_ht }}</div>
+    {% endif %}
+    <div class="mt-5 pt-4 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-400">
+        {% if match.venue %}<div><div class="text-slate-500">Venue</div><div class="text-slate-300">{{ match.venue }}</div></div>{% endif %}
+        {% if match.city %}<div><div class="text-slate-500">City</div><div class="text-slate-300">{{ match.city }}</div></div>{% endif %}
+        {% if match.referee %}<div><div class="text-slate-500">Referee</div><div class="text-slate-300">{{ match.referee }}</div></div>{% endif %}
+        {% if match.round %}<div><div class="text-slate-500">Round</div><div class="text-slate-300">{{ match.round }}</div></div>{% endif %}
+    </div>
+</section>
+
+<!-- Timeline -->
+<section class="rounded-2xl bg-navy-700/60 glow p-6">
+    <h2 class="font-semibold text-white mb-4">Event Timeline</h2>
+    {% if events %}
+    <ol class="relative border-l border-white/10 ml-3 space-y-5">
+        {% for ev in events %}
+        <li class="ml-5">
+            <span class="absolute -left-2.5 grid place-items-center h-5 w-5 rounded-full bg-navy-600 ring-4 ring-navy-700 text-[10px]">{{ ev.alert_emoji }}</span>
+            <div class="flex items-center gap-2 text-sm">
+                <span class="font-bold text-accent tabular-nums w-10">{{ ev.minute }}'{% if ev.minute_extra %}+{{ ev.minute_extra }}{% endif %}</span>
+                <span class="font-medium text-white">{{ ev.player_name|default:ev.get_event_type_display }}</span>
+                {% if ev.team %}<span class="text-xs text-slate-400">· {{ ev.team.name }}</span>{% endif %}
+            </div>
+            <div class="text-xs text-slate-400 ml-12 mt-0.5">
+                {{ ev.get_event_type_display }}{% if ev.assist_name %} · assist {{ ev.assist_name }}{% endif %}{% if ev.detail %} · {{ ev.detail }}{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="text-sm text-slate-500">No events recorded for this match.</p>
+    {% endif %}
+</section>
+{% endblock %}

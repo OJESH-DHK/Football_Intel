@@ -1,0 +1,49 @@
+{% extends "matches/base.html" %}
+
+{% block title %}Competitions · Football Intel{% endblock %}
+{% block heading %}Competitions{% endblock %}
+{% block subheading %}{{ competitions|length }} tracked{% endblock %}
+
+{% block content %}
+{% if competitions %}
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for comp in competitions %}
+    <div class="rounded-2xl bg-navy-700/60 glow p-5">
+        <div class="flex items-center gap-3">
+            {% if comp.logo_url %}
+            <img src="{{ comp.logo_url }}" class="h-10 w-10 object-contain" alt="">
+            {% else %}
+            <div class="h-10 w-10 rounded-lg bg-white/5 grid place-items-center">🏆</div>
+            {% endif %}
+            <div class="min-w-0">
+                <div class="font-semibold text-white truncate">{{ comp.name }}</div>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5">
+                    {% if comp.flag_url %}<img src="{{ comp.flag_url }}" class="h-3 w-4 object-cover rounded-sm" alt="">{% endif %}
+                    {{ comp.country }} · {{ comp.season }}
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+            <div class="rounded-lg bg-white/5 py-2">
+                <div class="text-lg font-bold text-white tabular-nums">{{ comp.match_count }}</div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400">Total</div>
+            </div>
+            <div class="rounded-lg bg-white/5 py-2">
+                <div class="text-lg font-bold text-white tabular-nums">{{ comp.today_count }}</div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400">Today</div>
+            </div>
+            <div class="rounded-lg bg-accent/10 py-2">
+                <div class="text-lg font-bold text-accent tabular-nums">{{ comp.live_count }}</div>
+                <div class="text-[10px] uppercase tracking-wide text-slate-400">Live</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+<div class="rounded-2xl bg-navy-700/40 glow p-12 text-center">
+    <div class="text-5xl mb-3">🏆</div>
+    <div class="text-lg font-semibold text-white">No tracked competitions</div>
+</div>
+{% endif %}
+{% endblock %}

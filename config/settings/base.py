@@ -127,6 +127,7 @@ TELEGRAM_WEBHOOK_SECRET = env("TELEGRAM_WEBHOOK_SECRET", default="")
 FOOTBALL_DATA_API_KEY = env("FOOTBALL_DATA_API_KEY", default="")
 NEWSAPI_KEY = env("NEWSAPI_KEY", default="")
 GNEWS_API_KEY = env("GNEWS_API_KEY", default="")
+API_FOOTBALL_KEY = env("API_FOOTBALL_KEY", default="")
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -134,6 +135,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# Dashboard views use @login_required; reuse the admin login page.
+LOGIN_URL = "/admin/login/"
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"

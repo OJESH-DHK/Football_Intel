@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Football Intel{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0a0f1f',
+                            800: '#0f1629',
+                            700: '#161f38',
+                            600: '#1e2a48',
+                        },
+                        accent: {
+                            DEFAULT: '#22e584',
+                            dark: '#16a85f',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { background: radial-gradient(1200px 600px at 80% -10%, #16233f 0%, #0a0f1f 55%); }
+        .glow { box-shadow: 0 0 0 1px rgba(34,229,132,.15), 0 8px 30px rgba(0,0,0,.4); }
+        @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+        .live-dot { animation: pulse-dot 1.2s ease-in-out infinite; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #0a0f1f; }
+        ::-webkit-scrollbar-thumb { background: #1e2a48; border-radius: 6px; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="h-full text-slate-200 font-sans antialiased">
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex w-64 flex-col bg-navy-800/70 backdrop-blur border-r border-white/5 fixed inset-y-0">
+        <div class="px-6 py-6 flex items-center gap-3 border-b border-white/5">
+            <div class="h-10 w-10 rounded-xl bg-accent/15 grid place-items-center text-accent text-xl">⚽</div>
+            <div>
+                <div class="font-extrabold tracking-tight text-white leading-none">Football<span class="text-accent">Intel</span></div>
+                <div class="text-[11px] text-slate-400 mt-1">Live ops dashboard</div>
+            </div>
+        </div>
+        <nav class="flex-1 px-3 py-5 space-y-1 text-sm">
+            {% url 'dashboard:live' as live_url %}
+            {% url 'dashboard:fixtures' as fixtures_url %}
+            {% url 'dashboard:competitions' as comp_url %}
+            <a href="{{ live_url }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg {% if active == 'live' %}bg-accent/15 text-accent font-semibold{% else %}text-slate-300 hover:bg-white/5{% endif %}">
+                <span class="h-2 w-2 rounded-full bg-accent live-dot"></span> Live Matches
+            </a>
+            <a href="{{ fixtures_url }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg {% if active == 'fixtures' %}bg-accent/15 text-accent font-semibold{% else %}text-slate-300 hover:bg-white/5{% endif %}">
+                <span class="text-slate-400">📅</span> Fixtures
+            </a>
+            <a href="{{ comp_url }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg {% if active == 'competitions' %}bg-accent/15 text-accent font-semibold{% else %}text-slate-300 hover:bg-white/5{% endif %}">
+                <span class="text-slate-400">🏆</span> Competitions
+            </a>
+        </nav>
+        <div class="px-4 py-4 border-t border-white/5 text-xs text-slate-400">
+            {% if user.is_authenticated %}
+                <div class="text-slate-300 font-medium truncate">{{ user.get_username }}</div>
+                <a href="/admin/logout/" class="text-accent hover:underline">Sign out</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 md:ml-64">
+        <header class="sticky top-0 z-10 bg-navy-900/80 backdrop-blur border-b border-white/5">
+            <div class="px-5 md:px-8 py-5 flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">{% block heading %}Dashboard{% endblock %}</h1>
+                    <p class="text-sm text-slate-400 mt-0.5">{% block subheading %}{% endblock %}</p>
+                </div>
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <div class="px-5 md:px-8 py-6 space-y-6">
+            {% if stats %}
+            <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="rounded-2xl bg-navy-700/60 glow p-5">
+                    <div class="text-xs uppercase tracking-wider text-slate-400">Matches Today</div>
+                    <div class="mt-2 text-3xl font-extrabold text-white">{{ stats.matches_today }}</div>
+                </div>
+                <div class="rounded-2xl bg-navy-700/60 glow p-5">
+                    <div class="text-xs uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-accent live-dot"></span> Live Now
+                    </div>
+                    <div class="mt-2 text-3xl font-extrabold text-accent">{{ stats.live_now }}</div>
+                </div>
+                <div class="rounded-2xl bg-navy-700/60 glow p-5">
+                    <div class="text-xs uppercase tracking-wider text-slate-400">Events Today</div>
+                    <div class="mt-2 text-3xl font-extrabold text-white">{{ stats.events_today }}</div>
+                </div>
+            </section>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

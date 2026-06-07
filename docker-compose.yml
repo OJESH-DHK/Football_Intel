@@ -1,5 +1,28 @@
-# Dev environment — hot-reload, exposed ports, SQL logging
+# Dev environment — hot-reload (bind mount), exposed ports, dev deps baked in.
 # Usage: docker compose up
+
+# Shared build + config for every service that runs the app image.
+# Anchors keep the 6 app services DRY — change once, applies everywhere.
+x-app-build: &app-build
+  build:
+    context: .
+    args:
+      INSTALL_DEV: "true"
+
+x-app-common: &app-common
+  <<: *app-build
+  restart: unless-stopped
+  volumes:
+    - .:/app                      # bind mount = live code reload in dev
+  environment:
+    - DJANGO_SETTINGS_MODULE=config.settings.development
+  env_file:
+    - .env
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
 
 services:
 
@@ -37,106 +60,31 @@ services:
       retries: 5
 
   web:
-    build:
-      context: .
-      args:
-        INSTALL_DEV: "true"
+    <<: *app-common
     container_name: football_web
-    restart: unless-stopped
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   celery-critical:
-    build:
-      context: .
-      args:
-        INSTALL_DEV: "true"
+    <<: *app-common
     container_name: football_celery_critical
-    restart: unless-stopped
     command: celery -A config worker -Q critical -c 2 -n critical@%h --loglevel=info
-    volumes:
-      - .:/app
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   celery-high:
-    build:
-      context: .
-      args:
-        INSTALL_DEV: "true"
+    <<: *app-common
     container_name: football_celery_high
-    restart: unless-stopped
     command: celery -A config worker -Q high -c 3 -n high@%h --loglevel=info
-    volumes:
-      - .:/app
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   celery-default:
-    build:
-      context: .
-      args:
-        INSTALL_DEV: "true"
+    <<: *app-common
     container_name: football_celery_default
-    restart: unless-stopped
     command: celery -A config worker -Q default,low -c 2 -n default@%h --loglevel=info
-    volumes:
-      - .:/app
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   celery-beat:
-    build:
-      context: .
-      args:
-        INSTALL_DEV: "true"
+    <<: *app-common
     container_name: football_celery_beat
-    restart: unless-stopped
     command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    volumes:
-      - .:/app
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.development
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
 volumes:
   postgres_data:

@@ -1,0 +1,83 @@
+{% extends "matches/base.html" %}
+
+{% block title %}Live Matches · Football Intel{% endblock %}
+{% block heading %}Live Matches{% endblock %}
+{% block subheading %}Auto-refreshing every 30s · next in <span id="next-refresh">30</span>s{% endblock %}
+
+{% block header_actions %}
+<div class="flex items-center gap-2 text-sm">
+    <span class="h-2.5 w-2.5 rounded-full bg-accent live-dot"></span>
+    <span class="text-slate-300 font-medium">{{ matches|length }} live</span>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if matches %}
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% for match in matches %}
+    <a href="{% url 'dashboard:match_detail' match.pk %}"
+       class="group rounded-2xl bg-navy-700/60 glow p-5 hover:bg-navy-600/60 transition-colors">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 text-xs text-slate-400 truncate">
+                {% if match.competition.logo_url %}<img src="{{ match.competition.logo_url }}" class="h-4 w-4 object-contain" alt="">{% endif %}
+                <span class="truncate">{{ match.competition.name }}</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/15 text-accent text-xs font-semibold px-2.5 py-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-accent live-dot"></span>
+                {% if match.minute %}{{ match.minute }}'{% else %}{{ match.get_status_display }}{% endif %}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+                {% if match.home_team.logo_url %}<img src="{{ match.home_team.logo_url }}" class="h-7 w-7 object-contain" alt="">{% endif %}
+                <span class="font-semibold text-white truncate">{{ match.home_team.name }}</span>
+            </div>
+            <div class="text-2xl font-extrabold text-white tabular-nums px-3">
+                {{ match.home_score|default:0 }} <span class="text-slate-500">:</span> {{ match.away_score|default:0 }}
+            </div>
+            <div class="flex items-center gap-2.5 justify-end min-w-0">
+                <span class="font-semibold text-white truncate text-right">{{ match.away_team.name }}</span>
+                {% if match.away_team.logo_url %}<img src="{{ match.away_team.logo_url }}" class="h-7 w-7 object-contain" alt="">{% endif %}
+            </div>
+        </div>
+
+        {% with goals=match.events.all %}
+        <div class="mt-4 pt-3 border-t border-white/5 flex flex-wrap gap-1.5 min-h-[1.5rem]">
+            {% for ev in goals %}
+                {% if ev.event_type == 'GOAL' or ev.event_type == 'PENALTY' or ev.event_type == 'OWN_GOAL' %}
+                <span class="inline-flex items-center gap-1 rounded-md bg-white/5 px-2 py-0.5 text-xs text-slate-300">
+                    {{ ev.alert_emoji }} {{ ev.player_name|default:'—' }} {{ ev.minute }}'
+                </span>
+                {% endif %}
+            {% empty %}
+                <span class="text-xs text-slate-500">No events yet</span>
+            {% endfor %}
+        </div>
+        {% endwith %}
+    </a>
+    {% endfor %}
+</section>
+{% else %}
+<div class="rounded-2xl bg-navy-700/40 glow p-12 text-center">
+    <div class="text-5xl mb-3">😴</div>
+    <div class="text-lg font-semibold text-white">No live matches right now</div>
+    <p class="text-slate-400 mt-1 text-sm">Check <a href="{% url 'dashboard:fixtures' %}" class="text-accent hover:underline">today's fixtures</a> for upcoming games.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh the live page every 30s with a visible countdown.
+    (function () {
+        var seconds = 30;
+        var label = document.getElementById('next-refresh');
+        setInterval(function () {
+            seconds -= 1;
+            if (label) label.textContent = seconds;
+            if (seconds <= 0) window.location.reload();
+        }, 1000);
+    })();
+</script>
+{% endblock %}
